@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadet Party Mission</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      color: white;
+      text-align: center;
+    }
+
+    /* Background for first pages */
+    .bg {
+      position: fixed;
+      inset: 0;
+      background: url('bg1.jpg') no-repeat center/cover;
+      filter: brightness(0.6);
+      z-index: -1;
+      transition: opacity 0.5s ease;
+    }
+
+    .hide-bg {
+      opacity: 0;
+    }
+
+    .page {
+      display: none;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      animation: fadeIn 0.6s ease;
+    }
+
+    .active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    button {
+      padding: 12px 25px;
+      margin: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .yes { background: #28a745; }
+    .no  { background: #dc3545; }
+
+    .small {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+
+    /* FINAL PAGE – FULL‑SCREEN IMAGE */
+    .final {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .final .bg-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+    }
+
+    .final::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .final .content {
+      position: relative;
+      z-index: 2;
+      padding: 20px;
+      font-size: 1.1em;
+    }
+
+    canvas {
+      position: fixed !important;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- First‑screen background -->
+  <div class="bg"></div>
+
+  <!-- SOUND EFFECTS (your 3 files) -->
+  <audio id="beepSound" src="beep.mp3"></audio>
+  <audio id="pageSound" src="sound.mp3"></audio>
+  <audio id="finalSound" src="final.mp3"></audio> <!-- removed "loop" -->
+
+  <!-- INTRO -->
+  <div class="page active" id="intro" onclick="nextPage(1)">
+    <h1>MISSION BRIEFING</h1>
+    <p>Cadet, you have been selected...</p>
+    <p class="small">Tap to continue</p>
+  </div>
+
+  <!-- PAGE 1 -->
+  <div class="page" id="p1">
+    <h1 id="q1text"></h1>
+    <button class="yes" onclick="playPageSound(1); nextPage(2)">Yes</button>
+    <button class="no" onmouseover="moveBtn(this)" onclick="errorMsg()">No</button>
+  </div>
+
+  <!-- PAGE 2 -->
+  <div class="page" id="p2">
+    <h1>How's the josh?</h1>
+    <button class="yes" onclick="playPageSound(2); nextPage(3)">HIGH!!!!</button>
+    <button class="no" onmouseover="moveBtn(this)" onclick="errorMsg2()">Low</button>
+  </div>
+
+  <!-- PAGE 3 -->
+  <div class="page" id="p3" onclick="nextPage(4)">
+    <h1>Are you ready for the celebration promised 3 years ago???</h1>
+    <p class="small">Click anywhere to continue</p>
+  </div>
+
+  <!-- FINAL PAGE -->
+  <div class="page final" id="p4" onclick="startFinalSequence()">
+    <img src="final.jpg" class="bg-img">
+    <div class="content">
+      <h2 id="finalText"></h2>
+    </div>
+  </div>
+
+  <script>
+    // NAME (safe default)
+    let userName = new URLSearchParams(window.location.search).get('name') || "Cadet";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("q1text").innerText =
+        `${userName}, do you like parties?`;
+    });
+
+    // Navigation
+    function nextPage(num) {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.getElementById("p" + num).classList.add("active");
+
+      if (num === 4) {
+        // Hide main background on final page
+        document.querySelector(".bg").classList.add("hide-bg");
+
+        // Show text (confetti + sound on click, not here)
+        document.getElementById("finalText").innerText =
+          `Expecting you, ${userName}!!! 🎉🫡`;
+      }
+    }
+
+    // Play your 3 sounds
+    function playPageSound(pageNum) {
+      let sound;
+      if (pageNum === 1) {
+        sound = document.getElementById("beepSound");
+      } else {
+        sound = document.getElementById("pageSound");
+      }
+      sound.currentTime = 0;
+      sound.play().catch(() => {});
+    }
+
+    // Final page click → play final.mp3 once + confetti
+    function startFinalSequence() {
+      const finalSound = document.getElementById("finalSound");
+
+      // Stop + reset in case it's still playing
+      finalSound.pause();
+      finalSound.currentTime = 0;
+      finalSound
+        .play()
+        .then(() => {
+          // Start confetti only after sound actually starts
+          launchConfetti();
+        })
+        .catch(() => {});
+    }
+
+    // ERROR MESSAGES
+    function errorMsg() {
+      let err = document.getElementById("beepSound");
+      err.currentTime = 0;
+      err.play().catch(() => {});
+      alert("A good cadet should always want a party");
+    }
+
+    function errorMsg2() {
+      let err = document.getElementById("beepSound");
+      err.currentTime = 0;
+      err.play().catch(() => {});
+      alert("Incorrect answer 🤡");
+    }
+
+    // MOVE BUTTON
+    function moveBtn(btn) {
+      btn.style.position = "absolute";
+      btn.style.top = Math.random() * 80 + "%";
+      btn.style.left = Math.random() * 80 + "%";
+    }
+
+    // CONFETTI (SIDE BURST)
+    function launchConfetti() {
+      const duration = 2000;
+      const end = Date.now() + duration;
+
+      (function frame() {
+        // LEFT SIDE
+        confetti({
+          particleCount: 5,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0, y: 0.7 }
+        });
+        // RIGHT SIDE
+        confetti({
+          particleCount: 5,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1, y: 0.7 }
+        });
+
+        if (Date.now() < end) {
+          requestAnimationFrame(frame);
+        }
+      })();
+    }
+  </script>
+</body>
+</html>
