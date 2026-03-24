@@ -72,23 +72,41 @@
       opacity: 0.8;
     }
 
-    /* FINAL PAGE – FULL‑SCREEN IMAGE ONLY */
+    /* FINAL PAGE – image scaled to fit, not full‑screen */
     .final {
       position: relative;
       width: 100%;
       height: 100vh;
+      justify-content: center;
+      align-items: center;
+      display: flex;
       overflow: hidden;
-      cursor: pointer;
+      padding: 20px;
     }
 
     .final .bg-img {
+      max-width: 90vw;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    /* Final page footer text “Tap for effects” */
+    .final-footer {
       position: absolute;
-      top: 0;
+      bottom: 20px;
       left: 0;
       width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: -2;
+      padding: 6px 0;
+      background: rgba(255, 255, 255, 0.9);
+      color: black;
+      font-size: 14px;
+      font-weight: bold;
+      text-align: center;
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      pointer-events: none;
     }
 
     canvas {
@@ -107,7 +125,7 @@
   <!-- SOUND EFFECTS (your 3 files) -->
   <audio id="beepSound" src="beep.mp3"></audio>
   <audio id="pageSound" src="sound.mp3"></audio>
-  <audio id="finalSound" src="final.mp3"></audio>
+  <audio id="finalSound" src="final.mp3"></audio> <!-- removed "loop" -->
 
   <!-- INTRO -->
   <div class="page active" id="intro" onclick="nextPage(1)">
@@ -136,9 +154,12 @@
     <p class="small">Click anywhere to continue</p>
   </div>
 
-  <!-- FINAL PAGE -->
-  <div class="page final" id="p4">
-    <img src="final.jpg" class="bg-img" onclick="startConfettiSequence()">
+  <!-- FINAL PAGE – image fits in page, no overlay, no text, with tap hint -->
+  <div class="page final" id="p4" onclick="startFinalSequence()">
+    <img src="final.jpg" class="bg-img">
+    <div class="final-footer">
+      Tap for effects
+    </div>
   </div>
 
   <script>
@@ -150,7 +171,7 @@
         `${userName}, do you like parties?`;
     });
 
-    // Navigation
+    // Navigation (play final.mp3 + confetti on reaching final page)
     function nextPage(num) {
       document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
       document.getElementById("p" + num).classList.add("active");
@@ -159,12 +180,20 @@
         // Hide main background on final page
         document.querySelector(".bg").classList.add("hide-bg");
 
-        // Play final sound once when reaching final screen
-        playFinalSound();
+        // Auto‑play final.mp3 and start confetti on arrival
+        const finalSound = document.getElementById("finalSound");
+        finalSound.pause();
+        finalSound.currentTime = 0;
+        finalSound
+          .play()
+          .then(() => {
+            launchConfetti(); // confetti starts when sound plays
+          })
+          .catch(() => {});
       }
     }
 
-    // Play page sounds
+    // Play your 3 sounds
     function playPageSound(pageNum) {
       let sound;
       if (pageNum === 1) {
@@ -176,17 +205,20 @@
       sound.play().catch(() => {});
     }
 
-    // Play final sound once
-    function playFinalSound() {
+    // Final page click → play final.mp3 once + confetti
+    function startFinalSequence() {
       const finalSound = document.getElementById("finalSound");
+
+      // Stop + reset in case it's still playing
       finalSound.pause();
       finalSound.currentTime = 0;
-      finalSound.play().catch(() => {});
-    }
-
-    // User interaction on final page → confetti only
-    function startConfettiSequence() {
-      launchConfetti();
+      finalSound
+        .play()
+        .then(() => {
+          // Start confetti only after sound actually starts
+          launchConfetti();
+        })
+        .catch(() => {});
     }
 
     // ERROR MESSAGES
