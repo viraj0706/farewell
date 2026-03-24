@@ -23,7 +23,7 @@
       text-align: center;
     }
 
-    /* Background for all pages */
+    /* Default background (bg1) */
     .bg {
       position: fixed;
       inset: 0;
@@ -33,9 +33,14 @@
       transition: opacity 0.5s ease;
     }
 
-    /* Use bg2 on page 2 and page 3 */
+    /* Use bg2 only on page 2 */
     .bg.bg-page23 {
       background-image: url('bg2.jpg');
+    }
+
+    /* Use bg3 only on page 3 */
+    #p3.active ~ .bg {
+      background-image: url('bg3.jpg');
     }
 
     .hide-bg {
@@ -131,7 +136,7 @@
   <audio id="beepSound" src="beep.mp3"></audio>
   <audio id="pageSound" src="sound.mp3"></audio>
   <audio id="finalSound" src="final.mp3"></audio>
-  <audio id="nopeSound" src="nope.mp3"></audio> <!-- new nope sound -->
+  <audio id="nopeSound" src="nope.mp3"></audio> <!-- nope sound -->
 
   <!-- INTRO -->
   <div class="page active" id="intro" onclick="nextPage(1)">
@@ -177,14 +182,17 @@
         `${userName}, do you like parties?`;
     });
 
-    // Navigation (also set background class for page 2 and 3)
+    // Navigation (change background per page)
     function nextPage(num) {
       document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
       document.getElementById("p" + num).classList.add("active");
       const bg = document.querySelector(".bg");
 
-      if (num === 2 || num === 3) {
+      if (num === 2) {
         bg.classList.add("bg-page23");
+      } else if (num === 3) {
+        bg.classList.remove("bg-page23");
+        // bg3 is set via CSS rule #p3.active ~ .bg
       } else {
         bg.classList.remove("bg-page23");
       }
@@ -200,7 +208,7 @@
         finalSound
           .play()
           .then(() => {
-            launchConfetti(); // confetti starts when sound plays
+            launchConfetti();
           })
           .catch(() => {});
       }
