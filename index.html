@@ -23,7 +23,7 @@
       text-align: center;
     }
 
-    /* Background for first pages */
+    /* Default background (bg1) */
     .bg {
       position: fixed;
       inset: 0;
@@ -31,6 +31,12 @@
       filter: brightness(0.6);
       z-index: -1;
       transition: opacity 0.5s ease;
+    }
+
+    /* Use bg2 on page 2 and page 3 only */
+    #p2.active ~ .bg,
+    #p3.active ~ .bg {
+      background-image: url('bg2.jpg');
     }
 
     .hide-bg {
