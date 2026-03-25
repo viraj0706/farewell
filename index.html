@@ -72,19 +72,40 @@
       opacity: 0.8;
     }
 
-    /* FINAL PAGE – image only, no extra background */
-    .final {
+    /* FINAL PAGE – background finalbg.jpg behind the card */
+    #p4.final {
       position: relative;
       width: 100%;
       height: 100vh;
+      display: flex;
       justify-content: center;
       align-items: center;
-      display: flex;
-      overflow: hidden;
       padding: 20px;
+      overflow: hidden;
     }
 
-    .final .bg-img {
+    /* Background layer (finalbg.jpg) */
+    #p4.final::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url('finalbg.jpg') no-repeat center/cover;
+      z-index: -2;
+    }
+
+    /* Optional dark overlay (softens background so card stands out) */
+    #p4.final::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: -1;
+    }
+
+    /* Card stays in front of finalbg.jpg */
+    #p4 .bg-img {
+      position: relative;
+      z-index: 1;
       max-width: 90vw;
       max-height: 80vh;
       object-fit: contain;
@@ -146,7 +167,7 @@
   <div class="page" id="p2">
     <h1>How's the josh?</h1>
     <button class="yes" onclick="playPageSound(2); nextPage(3)">HIGH!!!!</button>
-    <button class="no" onmouseover="playNopeSound(); moveBtn(this)" onclick="errorMsg2)">Low</button>
+    <button class="no" onmouseover="playNopeSound(); moveBtn(this)" onclick="errorMsg2()">Low</button>
   </div>
 
   <!-- PAGE 3 -->
@@ -155,7 +176,7 @@
     <p class="small">Click anywhere to continue</p>
   </div>
 
-  <!-- FINAL PAGE – image only, no group.jpg background -->
+  <!-- FINAL PAGE – invitation card in front of finalbg.jpg -->
   <div class="page final" id="p4" onclick="startFinalSequence()">
     <img src="final.jpg" class="bg-img">
     <div class="final-footer">
